@@ -15,28 +15,72 @@ const s = ( sketch ) => {
 
     let srcImg, dstImg
 
+    function getNeighbors(x, y, w, h) {
+        let ul = (((x - 1 + w) % w) + (w * ((y - 1 + h) % h))) * 4
+        let uc = (((x - 0 + w) % w) + (w * ((y - 1 + h) % h))) * 4
+        let ur = (((x + 1 + w) % w) + (w * ((y - 1 + h) % h))) * 4
+
+        let ml = (((x - 1 + w) % w) + (w * ((y + 0 + h) % h))) * 4
+        let mc = (((x - 0 + w) % w) + (w * ((y + 0 + h) % h))) * 4
+        let mr = (((x + 1 + w) % w) + (w * ((y + 0 + h) % h))) * 4
+
+        let ll = (((x - 1 + w) % w) + (w * ((y + 1 + h) % h))) * 4
+        let lc = (((x - 0 + w) % w) + (w * ((y + 1 + h) % h))) * 4
+        let lr = (((x + 1 + w) % w) + (w * ((y + 1 + h) % h))) * 4
+
+        return {
+            ul,
+            uc,
+            ur,
+            ml,
+            mc,
+            mr,
+            ll,
+            lc,
+            lr
+        }
+
+    }
+
     function processImage() {
         let w = srcImg.width
         let h = srcImg.height
 
         for (let x = 0; x < w; x++) {
             for (let y = 0; y < h; y++) {
-                let ul = (((x - 1 + w) % w) + (w * ((y - 1 + h) % h))) * 4
-                let uc = (((x - 0 + w) % w) + (w * ((y - 1 + h) % h))) * 4
-                let ur = (((x + 1 + w) % w) + (w * ((y - 1 + h) % h))) * 4
+                let neighbors = getNeighbors(x, y, w, h)
 
-                let ml = (((x - 1 + w) % w) + (w * ((y + 0 + h) % h))) * 4
-                let mc = (((x - 0 + w) % w) + (w * ((y + 0 + h) % h))) * 4
-                let mr = (((x + 1 + w) % w) + (w * ((y + 0 + h) % h))) * 4
+                if (y > 320 && y < 490 ) {
+                    if (sketch.frameCount % 4 === 0) {
+                        animFrames[1 - displayedImage].pixels[neighbors.mc + 0] = animFrames[displayedImage].pixels[neighbors.uc + 0]
+                        animFrames[1 - displayedImage].pixels[neighbors.mc + 1] = animFrames[displayedImage].pixels[neighbors.uc + 1]
+                        animFrames[1 - displayedImage].pixels[neighbors.mc + 2] = animFrames[displayedImage].pixels[neighbors.uc + 2]
+                        animFrames[1 - displayedImage].pixels[neighbors.mc + 3] = animFrames[displayedImage].pixels[neighbors.uc + 3]
+                    } else if (sketch.frameCount % 2 === 0) {
+                        animFrames[1 - displayedImage].pixels[neighbors.mc + 0] = animFrames[displayedImage].pixels[neighbors.lc + 0]
+                        animFrames[1 - displayedImage].pixels[neighbors.mc + 1] = animFrames[displayedImage].pixels[neighbors.lc + 1]
+                        animFrames[1 - displayedImage].pixels[neighbors.mc + 2] = animFrames[displayedImage].pixels[neighbors.lc + 2]
+                        animFrames[1 - displayedImage].pixels[neighbors.mc + 3] = animFrames[displayedImage].pixels[neighbors.lc + 3]
+                    } else {
+                        animFrames[1 - displayedImage].pixels[neighbors.mc + 0] = animFrames[displayedImage].pixels[neighbors.mc + 0]
+                        animFrames[1 - displayedImage].pixels[neighbors.mc + 1] = animFrames[displayedImage].pixels[neighbors.mc + 1]
+                        animFrames[1 - displayedImage].pixels[neighbors.mc + 2] = animFrames[displayedImage].pixels[neighbors.mc + 2]
+                        animFrames[1 - displayedImage].pixels[neighbors.mc + 3] = animFrames[displayedImage].pixels[neighbors.mc + 3]
+                    }
+                } else {
+                    animFrames[1 - displayedImage].pixels[neighbors.mc + 0] = animFrames[displayedImage].pixels[neighbors.mc + 0]
+                    animFrames[1 - displayedImage].pixels[neighbors.mc + 1] = animFrames[displayedImage].pixels[neighbors.mc + 1]
+                    animFrames[1 - displayedImage].pixels[neighbors.mc + 3] = animFrames[displayedImage].pixels[neighbors.mc + 3]
+                    animFrames[1 - displayedImage].pixels[neighbors.mc + 2] = animFrames[displayedImage].pixels[neighbors.mc + 2]
+                }
 
-                let ll = (((x - 1 + w) % w) + (w * ((y + 1 + h) % h))) * 4
-                let lc = (((x - 0 + w) % w) + (w * ((y + 1 + h) % h))) * 4
-                let lr = (((x + 1 + w) % w) + (w * ((y + 1 + h) % h))) * 4
 
-                animFrames[1 - displayedImage].pixels[mc + 0] = animFrames[displayedImage].pixels[lc + 3]
-                animFrames[1 - displayedImage].pixels[mc + 1] = animFrames[displayedImage].pixels[lc + 3]
-                animFrames[1 - displayedImage].pixels[mc + 5] = animFrames[displayedImage].pixels[lc - 2]
-                animFrames[1 - displayedImage].pixels[mc + 3] = animFrames[displayedImage].pixels[lc - 3]
+                // console.log(neighbors)
+
+                // animFrames[1 - displayedImage].pixels[mc + 0] = animFrames[displayedImage].pixels[lc + 3]
+                // animFrames[1 - displayedImage].pixels[mc + 1] = animFrames[displayedImage].pixels[lc + 3]
+                // animFrames[1 - displayedImage].pixels[mc + 5] = animFrames[displayedImage].pixels[lc - 2]
+                // animFrames[1 - displayedImage].pixels[mc + 3] = animFrames[displayedImage].pixels[lc - 3]
             }
         }
 
@@ -52,6 +96,7 @@ const s = ( sketch ) => {
     }
 
     sketch.setup = () => {
+        sketch.frameRate(10)
         sketch.createCanvas(srcImg.width, srcImg.height)
         sketch.pixelDensity(1)
         dstImg = sketch.createImage(srcImg.width, srcImg.height)
